@@ -1,7 +1,7 @@
 # Nodify Tensorboard Plugin
 
 <p align="center">
-  <img height='100px' src="./assets/trainy.png">
+  <img height='100px' src="https://www.ocf.berkeley.edu/~asai/static/images/trainy.png">
 </p>
 
 [![License](https://img.shields.io/badge/License-BSD_3--Clause-blue.svg)](https://opensource.org/licenses/BSD-3-Clause)
