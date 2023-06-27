@@ -11,7 +11,7 @@ import './App.css'
 
 
 function App() {
-  const topics = ["Temporal", "Kernels", "Progress", "Consistency", "GPU Util"];
+  const topics = ["Temporal", "Kernels", "Computation/Communication Overlap", "Progress", "Consistency", "GPU Util"];
   const [contentIndex, setContentIndex] = useState(0);
   const [selectedKey, setSelectedKey] = useState("0");
   const changeSelectedKey = (event) => {
@@ -32,8 +32,10 @@ function App() {
   } else if (contentIndex == 1) {
     plot = <iframe src='./kernel.html'></iframe>;
   } else if (contentIndex == 2) {
-    plot = <ProgressView />
+    plot = <iframe src='./comp_comm_overlap.html'></iframe>
   } else if (contentIndex == 3) {
+    plot = <ProgressView />
+  } else if (contentIndex == 4) {
     plot = <ConsistencyView />
   } else {
     plot = <UtilView />

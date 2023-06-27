@@ -23,6 +23,7 @@ from nodify_plugin.utils.plot import (
 
 PLUGIN_NAME = "nodify_plugin"
 
+
 class NodifyPlugin(base_plugin.TBPlugin):
     """Tensoboard plugin for Nodify Profiler"""
 
@@ -66,6 +67,7 @@ class NodifyPlugin(base_plugin.TBPlugin):
             "/comm_heat.html": self.comm_heat_route,
             "/mem_heat.html": self.mem_heat_route,
             "/util_heat.html": self.util_heat_route,
+            "/comp_comm_overlap.html": self.compute_communication_overlap_route,
         }
 
     def frontend_metadata(self):
@@ -284,6 +286,28 @@ class NodifyPlugin(base_plugin.TBPlugin):
             tickmode="array",
             tickvals=np.arange(len(bins)),
             ticktext=[d.strftime("%f") for d in pd.to_datetime(bins[:-1])],
+        )
+
+        contents = plotly.io.to_html(fig)
+        return werkzeug.Response(
+            contents, content_type="text/html", headers=NodifyPlugin.headers
+        )
+
+    @wrappers.Request.application
+    def compute_communication_overlap_route(self, request: werkzeug.Request):
+        del request
+
+        result_df = self.trace_analyzer.get_comm_comp_overlap(visualize=False)
+
+        fig = px.bar(
+            result_df,
+            x="rank",
+            y="comp_comm_overlap_pctg",
+            title="Computation-Communication Overlap",
+            labels={
+                "rank": "Rank",
+                "comp_comm_overlap_pctg": "Computation-Communication Overlap Percentage",
+            },
         )
 
         contents = plotly.io.to_html(fig)
