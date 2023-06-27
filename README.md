@@ -43,4 +43,8 @@ A lot of the features on the roadmap use Meta's [Dynolog](https://developers.fac
 
 * On-demand tracing and metrics through dynologger
 * Recommendations for fixing multinode bottlenecks
-* reading from logs stored on cloud object-stores (e.g. Amazon S3, Azure Blob) 
+* reading from logs stored on cloud object-stores (e.g. Amazon S3, Azure Blob)
+
+## Contributing
+
+For feature requests or bug reports/fixes, feel free to open a Github issue or make a pull request. We'd love to connect with any interested developers and we check our [Discord](https://discord.gg/d67CMuKY5V) to discuss the direction of our projects everyday. Connect with us either throught the text channels or through DM's.
