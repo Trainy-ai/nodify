@@ -55,9 +55,11 @@ setuptools.setup(
     name="nodify_plugin",
     version=get_version(os.path.join("nodify_plugin", "__init__.py")),
     description="Nodify Tensorboard Plugin.",
-    long_description="A tensorboard plugin for multi-node profiler views",
+    long_description=read("./README.md"),
+    long_description_content_type='text/markdown',
     author="Trainy Team",
     author_email="founders@trainy.ai",
+    readme="README.md",
     cmdclass={"build_frontend": build_frontend},
     packages=setuptools.find_packages(),
     package_data={
