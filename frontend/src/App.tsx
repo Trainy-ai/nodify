@@ -7,11 +7,13 @@ import SideBar from "./components/SideBar/SideBar.jsx";
 import ProgressView from "./components/ProgressView/ProgressView.jsx"
 import ConsistencyView from './components/ConsistencyView/ConsistencyView.js';
 import UtilView from './components/UtilView/UtilView.js';
+import TemporalView from './components/TemporalView/TemporalView.js';
+import IdleTimeView from './components/IdleTimeView/IdleTimeView.js';
 import './App.css'
 
 
 function App() {
-  const topics = ["Temporal", "Kernels", "Computation/Communication Overlap", "Progress", "Consistency", "GPU Util"];
+  const topics = ["Temporal", "Kernels", "Computation/Communication Overlap", "Progress", "Consistency", "GPU Util", "Idle Time", "Temporal Test"];
   const [contentIndex, setContentIndex] = useState(0);
   const [selectedKey, setSelectedKey] = useState("0");
   const changeSelectedKey = (event) => {
@@ -37,8 +39,12 @@ function App() {
     plot = <ProgressView />
   } else if (contentIndex == 4) {
     plot = <ConsistencyView />
-  } else {
+  } else if (contentIndex == 5){
     plot = <UtilView />
+  } else if (contentIndex == 6){
+    plot = <IdleTimeView />
+  } else {
+    plot = <TemporalView />
   }
   return (
     <div className="App">
