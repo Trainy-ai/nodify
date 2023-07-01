@@ -113,24 +113,30 @@ class NodifyPlugin(base_plugin.TBPlugin):
     @wrappers.Request.application
     def idle_time_route(self, request: werkzeug.Request):
         rank = request.args.get("rank")
+        pct = request.args.get("visualizePct")
+        pct_bool = (pct == 'true')
 
-        idle_time_df = self.trace_analyzer.get_idle_time_breakdown(ranks = [int(rank)], visualize=False)[0]
+        idle_time_df = self.trace_analyzer.get_idle_time_breakdown(ranks = [int(rank)], visualize=False, visualize_pctg=pct_bool)[0]
         idle_time_df["stream"] = idle_time_df.stream.astype(str)
+        ycol = "idle_time_ratio" if pct_bool else "idle_time"
 
         fig = px.bar(
             idle_time_df,
             x="stream",
-            y="idle_time_ratio",
+            y=ycol,
             color="idle_category",
             hover_data=["idle_time", "idle_time_ratio"],
             title=f"Idle time breakdown on rank {rank} per CUDA stream",
         )
 
-        fig.update_layout(
-            yaxis_tickformat=".2%",
-            yaxis_title="Percentage",
-            legend_title="Idle Time Breakdown",
-        )
+        if pct_bool:
+            fig.update_layout(
+                yaxis_tickformat=".2%",
+                yaxis_title="Percentage",
+                legend_title="Idle Time Breakdown",
+            )
+        else:
+            fig.update_layout(yaxis_title="Idle time (us)", legend_title="Idle Time Breakdown")
         
         contents = plotly.io.to_json(fig)
         #contents['num_ranks'] = len(self.trace_analyzer.t.traces)
