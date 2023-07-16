@@ -5,6 +5,7 @@
 import numpy as np
 import pandas as pd
 import os
+import json
 
 from hta.trace_analysis import TraceAnalysis
 
@@ -68,6 +69,9 @@ class NodifyPlugin(base_plugin.TBPlugin):
             "/mem_heat.html": self.mem_heat_route,
             "/util_heat.html": self.util_heat_route,
             "/comp_comm_overlap.html": self.compute_communication_overlap_route,
+            "/temporal_dev": self.temporal_dev,
+            "/idle_time": self.idle_time_route,
+            "/num_ranks": self.num_ranks_route,
         }
 
     def frontend_metadata(self):
@@ -95,6 +99,60 @@ class NodifyPlugin(base_plugin.TBPlugin):
             raise exceptions.NotFound("404 Not Found")
         return werkzeug.Response(
             contents, content_type=mimetype, headers=NodifyPlugin.headers
+        )
+
+    @wrappers.Request.application
+    def num_ranks_route(self, request: werkzeug.Request):
+        num_ranks = len(self.trace_analyzer.t.traces)
+        contents = json.dumps({'num_ranks': num_ranks})
+        return werkzeug.Response(
+            contents, content_type="application/json", headers=NodifyPlugin.headers
+        )
+        
+
+    @wrappers.Request.application
+    def idle_time_route(self, request: werkzeug.Request):
+        rank = request.args.get("rank")
+        pct = request.args.get("visualizePct")
+        pct_bool = (pct == 'true')
+
+        idle_time_df = self.trace_analyzer.get_idle_time_breakdown(ranks = [int(rank)], visualize=False, visualize_pctg=pct_bool)[0]
+        idle_time_df["stream"] = idle_time_df.stream.astype(str)
+        ycol = "idle_time_ratio" if pct_bool else "idle_time"
+
+        fig = px.bar(
+            idle_time_df,
+            x="stream",
+            y=ycol,
+            color="idle_category",
+            hover_data=["idle_time", "idle_time_ratio"],
+            title=f"Idle time breakdown on rank {rank} per CUDA stream",
+        )
+
+        if pct_bool:
+            fig.update_layout(
+                yaxis_tickformat=".2%",
+                yaxis_title="Percentage",
+                legend_title="Idle Time Breakdown",
+            )
+        else:
+            fig.update_layout(yaxis_title="Idle time (us)", legend_title="Idle Time Breakdown")
+        
+        contents = plotly.io.to_json(fig)
+        #contents['num_ranks'] = len(self.trace_analyzer.t.traces)
+        #breakpoint()
+        return werkzeug.Response(
+            contents, content_type="application/json", headers=NodifyPlugin.headers
+        )
+
+    @wrappers.Request.application
+    def temporal_dev(self, request: werkzeug.Request):
+        del request  # unused
+        time_spent_df = self.trace_analyzer.get_temporal_breakdown(visualize=False)
+        contents = time_spent_df.to_json()
+        #breakpoint()
+        return werkzeug.Response(
+            contents, content_type="application/json", headers=NodifyPlugin.headers
         )
 
     @wrappers.Request.application
