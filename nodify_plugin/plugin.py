@@ -60,12 +60,12 @@ class NodifyPlugin(base_plugin.TBPlugin):
         return {
             "/index.js": self.static_file_route,
             "/index.html": self.static_file_route,
-            "/consistency_start2start.html": self.consistency_start2start_route,
-            "/consistency_start2end.html": self.consistency_start2end_route,
-            "/kernel.html": self.kernel_route,
-            "/progress_start2start.html": self.progress_start2start_route,
-            "/progress_start2end.html": self.progress_start2end_route,
-            "/temporal.html": self.temporal_breakdown_route,
+            "/consistency_start2start": self.consistency_start2start_route,
+            "/consistency_start2end": self.consistency_start2end_route,
+            "/kernel": self.kernel_route,
+            "/progress_start2start": self.progress_start2start_route,
+            "/progress_start2end": self.progress_start2end_route,
+            "/temporal": self.temporal_breakdown_route,
             "/comm_heat.html": self.comm_heat_route,
             "/mem_heat.html": self.mem_heat_route,
             "/util_heat.html": self.util_heat_route,
@@ -160,6 +160,7 @@ class NodifyPlugin(base_plugin.TBPlugin):
         )
 
     @wrappers.Request.application
+    @cache
     def temporal_breakdown_route(self, request: werkzeug.Request):
         del request  # unused
         time_spent_df = self.trace_analyzer.get_temporal_breakdown(visualize=False)
@@ -175,12 +176,13 @@ class NodifyPlugin(base_plugin.TBPlugin):
             yaxis_title="Percentage",
             legend_title="Time Breakdown",
         )
-        contents = plotly.io.to_html(fig)
+        contents = plotly.io.to_json(fig)
         return werkzeug.Response(
-            contents, content_type="text/html", headers=NodifyPlugin.headers
+            contents, content_type="application/json", headers=NodifyPlugin.headers
         )
 
     @wrappers.Request.application
+    @cache
     def kernel_route(self, request: werkzeug.Request):
         # TODO: Refactor this to split the dataframe logic from the plotting logic for the later plots
         del request  # unused
@@ -203,9 +205,9 @@ class NodifyPlugin(base_plugin.TBPlugin):
             legend=dict(yanchor="bottom", y=-0.4, xanchor="left", x=0),
         )
 
-        contents = plotly.io.to_html(fig)
+        contents = plotly.io.to_json(fig)
         return werkzeug.Response(
-            contents, content_type="text/html", headers=NodifyPlugin.headers
+            contents, content_type="application/json", headers=NodifyPlugin.headers
         )
 
     @wrappers.Request.application
@@ -221,9 +223,9 @@ class NodifyPlugin(base_plugin.TBPlugin):
             title="time between ncclKernel_AllReduce starts",
             labels={"delta": "time delta (ns)"},
         )
-        contents = plotly.io.to_html(fig)
+        contents = plotly.io.to_json(fig)
         return werkzeug.Response(
-            contents, content_type="text/html", headers=NodifyPlugin.headers
+            contents, content_type="application/json", headers=NodifyPlugin.headers
         )
 
     @wrappers.Request.application
@@ -239,9 +241,9 @@ class NodifyPlugin(base_plugin.TBPlugin):
             title="time between ncclKernel_AllReduce calls",
             labels={"delta": "time delta (ns)"},
         )
-        contents = plotly.io.to_html(fig)
+        contents = plotly.io.to_json(fig)
         return werkzeug.Response(
-            contents, content_type="text/html", headers=NodifyPlugin.headers
+            contents, content_type="application/json", headers=NodifyPlugin.headers
         )
 
     @wrappers.Request.application
@@ -257,9 +259,9 @@ class NodifyPlugin(base_plugin.TBPlugin):
             title="time between ncclKernel_AllReduce starts",
             labels={"delta": "time delta (ns)"},
         )
-        contents = plotly.io.to_html(fig)
+        contents = plotly.io.to_json(fig)
         return werkzeug.Response(
-            contents, content_type="text/html", headers=NodifyPlugin.headers
+            contents, content_type="application/json", headers=NodifyPlugin.headers
         )
 
     @wrappers.Request.application
@@ -275,9 +277,9 @@ class NodifyPlugin(base_plugin.TBPlugin):
             title="time between ncclKernel_AllReduce calls",
             labels={"delta": "time delta (ns)"},
         )
-        contents = plotly.io.to_html(fig)
+        contents = plotly.io.to_json(fig)
         return werkzeug.Response(
-            contents, content_type="text/html", headers=NodifyPlugin.headers
+            contents, content_type="application/json", headers=NodifyPlugin.headers
         )
 
     @wrappers.Request.application
@@ -356,6 +358,7 @@ class NodifyPlugin(base_plugin.TBPlugin):
         )
 
     @wrappers.Request.application
+    @cache
     def compute_communication_overlap_route(self, request: werkzeug.Request):
         del request
 
@@ -374,7 +377,7 @@ class NodifyPlugin(base_plugin.TBPlugin):
 
         contents = plotly.io.to_json(fig)
         return werkzeug.Response(
-            contents, content_type="text/html", headers=NodifyPlugin.headers
+            contents, content_type="application/json", headers=NodifyPlugin.headers
         )
 
 
