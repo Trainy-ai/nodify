@@ -4,8 +4,9 @@ import { useState } from 'react'
 import { Layout } from "antd";
 import TopicMenu from "./components/TopicMenu.jsx";
 import SideBar from "./components/SideBar/SideBar.jsx";
-import ProgressView from "./components/ProgressView/ProgressView.jsx"
+import ProgressView from "./components/ProgressView/ProgressView.jsx";
 import ConsistencyView from './components/ConsistencyView/ConsistencyView.js';
+import CompCommOverlapView from './components/CompCommOverlapView/CompCommOverlapView.tsx';
 import UtilView from './components/UtilView/UtilView.js';
 import TemporalView from './components/TemporalView/TemporalView.js';
 import IdleTimeView from './components/IdleTimeView/IdleTimeView.js';
@@ -34,14 +35,15 @@ function App() {
   } else if (contentIndex == 1) {
     plot = <iframe src='./kernel.html'></iframe>;
   } else if (contentIndex == 2) {
-    plot = <iframe src='./comp_comm_overlap.html'></iframe>
+    // plot = <iframe src='./comp_comm_overlap.html'></iframe>
+    plot = <CompCommOverlapView />
   } else if (contentIndex == 3) {
     plot = <ProgressView />
   } else if (contentIndex == 4) {
     plot = <ConsistencyView />
-  } else if (contentIndex == 5){
+  } else if (contentIndex == 5) {
     plot = <UtilView />
-  } else if (contentIndex == 6){
+  } else if (contentIndex == 6) {
     plot = <IdleTimeView />
   } else {
     plot = <TemporalView />
