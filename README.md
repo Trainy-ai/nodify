@@ -9,7 +9,7 @@
 [![](https://img.shields.io/badge/Twitter-1DA1F2?style=for-the-badge&logo=twitter&logoColor=white)](https://twitter.com/TrainyAI)
 [![](https://dcbadge.vercel.app/api/server/d67CMuKY5V)](https://discord.gg/d67CMuKY5V)
 
-This is a tensorboard plugin by [Trainy](trainy.ai) to supplement the existing [PyTorch Profiler](https://pytorch.org/tutorials/intermediate/tensorboard_profiler_tutorial.html). This provides additional visualizations to effectively characterize traces for runs involving multiple GPUs. The plugin expects all traces to be collected using `torch.profile` and to be located in the same folder.
+This is a tensorboard plugin by [Trainy](https://trainy.ai) to supplement the existing [PyTorch Profiler](https://pytorch.org/tutorials/intermediate/tensorboard_profiler_tutorial.html). This provides additional visualizations to effectively characterize traces for runs involving multiple GPUs. The plugin expects all traces to be collected using `torch.profile` and to be located in the same folder.
 
 ## Installation & Quickstart
 
