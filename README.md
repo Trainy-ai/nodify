@@ -25,8 +25,6 @@ Generate PyTorch profiler traces as shown [here](https://pytorch.org/tutorials/r
 tensorboard --logdir log/resnet18/
 ```
 
-Take a look at our [quickstart guide](https://github.com/Trainy-ai/nodify) to learn about the different graph views and how you can use them to debug your multinode training.
-
 ## Development
 
 To view the plugin for development, create a virtual environment, install the requirements, and install the plugin.
