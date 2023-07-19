@@ -361,9 +361,9 @@ class NodifyPlugin(base_plugin.TBPlugin):
         )
         fig = px.box(
             df.dropna(),
-            x="rank",
+            x="iteration",
             y="delta",
-            color="iteration",
+            color="rank",
             title="time between ncclKernel_AllReduce starts",
             labels={"delta": "time delta (ns)"},
         )
@@ -381,9 +381,9 @@ class NodifyPlugin(base_plugin.TBPlugin):
         )
         fig = px.box(
             df.dropna(),
-            x="rank",
+            x="iteration",
             y="delta",
-            color="iteration",
+            color="rank",
             title="time between ncclKernel_ReduceScatter starts",
             labels={"delta": "time delta (ns)"},
         )
@@ -401,9 +401,9 @@ class NodifyPlugin(base_plugin.TBPlugin):
         )
         fig = px.box(
             df.dropna(),
-            x="rank",
+            x="iteration",
             y="delta",
-            color="iteration",
+            color="rank",
             title="time between ncclKernel_AllGather starts",
             labels={"delta": "time delta (ns)"},
         )
@@ -421,9 +421,9 @@ class NodifyPlugin(base_plugin.TBPlugin):
         )
         fig = px.box(
             df.dropna(),
-            x="rank",
+            x="iteration",
             y="delta",
-            color="iteration",
+            color="rank",
             title="time between ncclKernel_AllReduce starts",
             labels={"delta": "time delta (ns)"},
         )
@@ -441,9 +441,9 @@ class NodifyPlugin(base_plugin.TBPlugin):
         )
         fig = px.box(
             df.dropna(),
-            x="rank",
+            x="iteration",
             y="delta",
-            color="iteration",
+            color="rank",
             title="time between ncclKernel_ReduceScatter starts",
             labels={"delta": "time delta (ns)"},
         )
@@ -461,9 +461,9 @@ class NodifyPlugin(base_plugin.TBPlugin):
         )
         fig = px.box(
             df.dropna(),
-            x="rank",
+            x="iteration",
             y="delta",
-            color="iteration",
+            color="ranks",
             title="time between ncclKernel_AllGather starts",
             labels={"delta": "time delta (ns)"},
         )
