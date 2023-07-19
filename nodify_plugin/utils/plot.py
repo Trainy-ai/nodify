@@ -72,15 +72,19 @@ def start_delta(df):
     return df
 
 
-def time_between_barriers_start(trace_data, ranks=None, iterations=None):
+def time_between_barriers_start(
+    trace_data, comm_id="ncclKernel_AllReduce", ranks=None, iterations=None
+):
     """
     Returns the time between barrier operations
+
+    comm_id can be {ncclKernel_AllReduce, ncclKernel_AllGather, ncclKernel_ReduceScatter}
     """
     df = prepare_df(trace_data, ranks=ranks, iterations=iterations)
     symbol_table = trace_data.symbol_table
 
     s_map = pd.Series(symbol_table.get_sym_id_map())
-    communication_ids = s_map[s_map.index.str.startswith("ncclKernel_AllReduce")].values
+    communication_ids = s_map[s_map.index.str.startswith(comm_id)].values
     comms_df = df.loc[df["name"].isin(communication_ids)]
     return comms_df.groupby("rank").apply(start_delta).reset_index(drop=True)
 
@@ -93,7 +97,9 @@ def start_end_delta(df):
     return df
 
 
-def time_between_barriers_start2end(trace_data, ranks=None, iterations=None):
+def time_between_barriers_start2end(
+    trace_data, comm_id="ncclKernel_AllReduce", ranks=None, iterations=None
+):
     """
     Returns the time between barrier operations
     """
@@ -101,6 +107,6 @@ def time_between_barriers_start2end(trace_data, ranks=None, iterations=None):
     symbol_table = trace_data.symbol_table
 
     s_map = pd.Series(symbol_table.get_sym_id_map())
-    communication_ids = s_map[s_map.index.str.startswith("ncclKernel_AllReduce")].values
+    communication_ids = s_map[s_map.index.str.startswith(comm_id)].values
     comms_df = df.loc[df["name"].isin(communication_ids)]
     return comms_df.groupby("rank").apply(start_end_delta).reset_index(drop=True)

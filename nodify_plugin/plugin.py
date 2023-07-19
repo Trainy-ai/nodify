@@ -7,7 +7,7 @@ import os
 import json
 
 from functools import cache
-
+from datetime import datetime
 from hta.trace_analysis import TraceAnalysis
 
 import plotly
@@ -17,10 +17,22 @@ from tensorboard.plugins import base_plugin
 import werkzeug
 from werkzeug import exceptions, wrappers
 
+import socket
+
+## getting the hostname by socket.gethostname() method
+hostname = socket.gethostname()
+
 from nodify_plugin.utils.plot import (
     heatmap,
     time_between_barriers_start,
     time_between_barriers_start2end,
+)
+
+from posthog import Posthog
+
+posthog = Posthog(
+    project_api_key="phc_4UgX80BfVNmYRZ2o3dJLyRMGkv1CxBozPAcPnD29uP4",
+    host="https://app.posthog.com",
 )
 
 PLUGIN_NAME = "nodify_plugin"
@@ -38,6 +50,11 @@ class NodifyPlugin(base_plugin.TBPlugin):
         Args:
         context: A base_plugin.TBContext instance.
         """
+        posthog.capture(
+            f"{hash(hostname)}",
+            event="nodify launched",
+            timestamp=datetime.utcnow(),
+        )
         self.data_provider = context.data_provider
         self.logdir = os.path.abspath(context.logdir.rstrip("/"))
         try:
@@ -46,7 +63,6 @@ class NodifyPlugin(base_plugin.TBPlugin):
             print(
                 f"An exception occurred loading your trace files. You will not be able to visualize anything: {str(e)}"
             )
-            exit(1)
 
     def is_active(self):
         """Returns whether there is relevant data for the plugin to process.
@@ -60,15 +76,23 @@ class NodifyPlugin(base_plugin.TBPlugin):
         return {
             "/index.js": self.static_file_route,
             "/index.html": self.static_file_route,
-            "/consistency_start2start": self.consistency_start2start_route,
-            "/consistency_start2end": self.consistency_start2end_route,
+            "/consistency_AllReduce_start2start_route": self.consistency_AllReduce_start2start_route,
+            "/consistency_AllGather_start2start_route": self.consistency_AllGather_start2start_route,
+            "/consistency_ReduceScatter_start2start_route": self.consistency_ReduceScatter_start2start_route,
+            "/consistency_AllReduce_start2end_route": self.consistency_AllReduce_start2end_route,
+            "/consistency_AllGather_start2end_route": self.consistency_AllGather_start2end_route,
+            "/consistency_ReduceScatter_start2end_route": self.consistency_ReduceScatter_start2end_route,
             "/kernel": self.kernel_route,
-            "/progress_start2start": self.progress_start2start_route,
-            "/progress_start2end": self.progress_start2end_route,
+            "/progress_AllReduce_start2start_route": self.progress_AllReduce_start2start_route,
+            "/progress_AllGather_start2end_route": self.progress_AllGather_start2end_route,
+            "/progress_ReduceScatter_start2start_route": self.progress_ReduceScatter_start2start_route,
+            "/progress_AllReduce_start2end_route": self.progress_AllReduce_start2end_route,
+            "/progress_AllGather_start2end_route": self.progress_AllGather_start2end_route,
+            "/progress_ReduceScatter_start2end_route": self.progress_ReduceScatter_start2end_route,
             "/temporal": self.temporal_breakdown_route,
-            "/comm_heat.html": self.comm_heat_route,
-            "/mem_heat.html": self.mem_heat_route,
-            "/util_heat.html": self.util_heat_route,
+            "/comm_heat": self.comm_heat_route,
+            "/mem_heat": self.mem_heat_route,
+            "/util_heat": self.util_heat_route,
             "/comp_comm_overlap": self.compute_communication_overlap_route,
             "/temporal_dev": self.temporal_dev,
             "/idle_time": self.idle_time_route,
@@ -143,8 +167,6 @@ class NodifyPlugin(base_plugin.TBPlugin):
             )
 
         contents = plotly.io.to_json(fig)
-        # contents['num_ranks'] = len(self.trace_analyzer.t.traces)
-        # breakpoint()
         return werkzeug.Response(
             contents, content_type="application/json", headers=NodifyPlugin.headers
         )
@@ -154,7 +176,6 @@ class NodifyPlugin(base_plugin.TBPlugin):
         del request  # unused
         time_spent_df = self.trace_analyzer.get_temporal_breakdown(visualize=False)
         contents = time_spent_df.to_json()
-        # breakpoint()
         return werkzeug.Response(
             contents, content_type="application/json", headers=NodifyPlugin.headers
         )
@@ -211,10 +232,12 @@ class NodifyPlugin(base_plugin.TBPlugin):
         )
 
     @wrappers.Request.application
-    def consistency_start2start_route(self, request: werkzeug.Request):
+    def consistency_AllReduce_start2start_route(self, request: werkzeug.Request):
         del request
 
-        df = time_between_barriers_start(self.trace_analyzer.t)
+        df = time_between_barriers_start(
+            self.trace_analyzer.t, comm_id="ncclKernel_AllReduce"
+        )
         fig = px.box(
             df.dropna(),
             x="rank",
@@ -229,16 +252,18 @@ class NodifyPlugin(base_plugin.TBPlugin):
         )
 
     @wrappers.Request.application
-    def consistency_start2end_route(self, request: werkzeug.Request):
+    def consistency_ReduceScatter_start2start_route(self, request: werkzeug.Request):
         del request
 
-        df = time_between_barriers_start2end(self.trace_analyzer.t)
+        df = time_between_barriers_start(
+            self.trace_analyzer.t, comm_id="ncclKernel_ReduceScatter"
+        )
         fig = px.box(
             df.dropna(),
             x="rank",
             y="delta",
             color="iteration",
-            title="time between ncclKernel_AllReduce calls",
+            title="time between ncclKernel_ReduceScatter starts",
             labels={"delta": "time delta (ns)"},
         )
         contents = plotly.io.to_json(fig)
@@ -247,15 +272,37 @@ class NodifyPlugin(base_plugin.TBPlugin):
         )
 
     @wrappers.Request.application
-    def progress_start2start_route(self, request: werkzeug.Request):
+    def consistency_AllGather_start2start_route(self, request: werkzeug.Request):
         del request
 
-        df = time_between_barriers_start(self.trace_analyzer.t)
+        df = time_between_barriers_start(
+            self.trace_analyzer.t, comm_id="ncclKernel_AllGather"
+        )
         fig = px.box(
             df.dropna(),
-            x="iteration",
+            x="rank",
             y="delta",
-            color="rank",
+            color="iteration",
+            title="time between ncclKernel_AllGather starts",
+            labels={"delta": "time delta (ns)"},
+        )
+        contents = plotly.io.to_json(fig)
+        return werkzeug.Response(
+            contents, content_type="application/json", headers=NodifyPlugin.headers
+        )
+
+    @wrappers.Request.application
+    def consistency_AllReduce_start2end_route(self, request: werkzeug.Request):
+        del request
+
+        df = time_between_barriers_start2end(
+            self.trace_analyzer.t, comm_id="ncclKernel_AllReduce"
+        )
+        fig = px.box(
+            df.dropna(),
+            x="rank",
+            y="delta",
+            color="iteration",
             title="time between ncclKernel_AllReduce starts",
             labels={"delta": "time delta (ns)"},
         )
@@ -265,16 +312,159 @@ class NodifyPlugin(base_plugin.TBPlugin):
         )
 
     @wrappers.Request.application
-    def progress_start2end_route(self, request: werkzeug.Request):
+    def consistency_ReduceScatter_start2end_route(self, request: werkzeug.Request):
         del request
 
-        df = time_between_barriers_start2end(self.trace_analyzer.t)
+        df = time_between_barriers_start2end(
+            self.trace_analyzer.t, comm_id="ncclKernel_ReduceScatter"
+        )
         fig = px.box(
             df.dropna(),
-            x="iteration",
+            x="rank",
             y="delta",
-            color="rank",
-            title="time between ncclKernel_AllReduce calls",
+            color="iteration",
+            title="time between ncclKernel_ReduceScatter starts",
+            labels={"delta": "time delta (ns)"},
+        )
+        contents = plotly.io.to_json(fig)
+        return werkzeug.Response(
+            contents, content_type="application/json", headers=NodifyPlugin.headers
+        )
+
+    @wrappers.Request.application
+    def consistency_AllGather_start2end_route(self, request: werkzeug.Request):
+        del request
+
+        df = time_between_barriers_start2end(
+            self.trace_analyzer.t, comm_id="ncclKernel_AllGather"
+        )
+        fig = px.box(
+            df.dropna(),
+            x="rank",
+            y="delta",
+            color="iteration",
+            title="time between ncclKernel_AllGather starts",
+            labels={"delta": "time delta (ns)"},
+        )
+        contents = plotly.io.to_json(fig)
+        return werkzeug.Response(
+            contents, content_type="application/json", headers=NodifyPlugin.headers
+        )
+
+    ################################
+    @wrappers.Request.application
+    def progress_AllReduce_start2start_route(self, request: werkzeug.Request):
+        del request
+
+        df = time_between_barriers_start(
+            self.trace_analyzer.t, comm_id="ncclKernel_AllReduce"
+        )
+        fig = px.box(
+            df.dropna(),
+            x="rank",
+            y="delta",
+            color="iteration",
+            title="time between ncclKernel_AllReduce starts",
+            labels={"delta": "time delta (ns)"},
+        )
+        contents = plotly.io.to_json(fig)
+        return werkzeug.Response(
+            contents, content_type="application/json", headers=NodifyPlugin.headers
+        )
+
+    @wrappers.Request.application
+    def progress_ReduceScatter_start2start_route(self, request: werkzeug.Request):
+        del request
+
+        df = time_between_barriers_start(
+            self.trace_analyzer.t, comm_id="ncclKernel_ReduceScatter"
+        )
+        fig = px.box(
+            df.dropna(),
+            x="rank",
+            y="delta",
+            color="iteration",
+            title="time between ncclKernel_ReduceScatter starts",
+            labels={"delta": "time delta (ns)"},
+        )
+        contents = plotly.io.to_json(fig)
+        return werkzeug.Response(
+            contents, content_type="application/json", headers=NodifyPlugin.headers
+        )
+
+    @wrappers.Request.application
+    def progress_AllGather_start2start_route(self, request: werkzeug.Request):
+        del request
+
+        df = time_between_barriers_start(
+            self.trace_analyzer.t, comm_id="ncclKernel_AllGather"
+        )
+        fig = px.box(
+            df.dropna(),
+            x="rank",
+            y="delta",
+            color="iteration",
+            title="time between ncclKernel_AllGather starts",
+            labels={"delta": "time delta (ns)"},
+        )
+        contents = plotly.io.to_json(fig)
+        return werkzeug.Response(
+            contents, content_type="application/json", headers=NodifyPlugin.headers
+        )
+
+    @wrappers.Request.application
+    def progress_AllReduce_start2end_route(self, request: werkzeug.Request):
+        del request
+
+        df = time_between_barriers_start2end(
+            self.trace_analyzer.t, comm_id="ncclKernel_AllReduce"
+        )
+        fig = px.box(
+            df.dropna(),
+            x="rank",
+            y="delta",
+            color="iteration",
+            title="time between ncclKernel_AllReduce starts",
+            labels={"delta": "time delta (ns)"},
+        )
+        contents = plotly.io.to_json(fig)
+        return werkzeug.Response(
+            contents, content_type="application/json", headers=NodifyPlugin.headers
+        )
+
+    @wrappers.Request.application
+    def progress_ReduceScatter_start2end_route(self, request: werkzeug.Request):
+        del request
+
+        df = time_between_barriers_start2end(
+            self.trace_analyzer.t, comm_id="ncclKernel_ReduceScatter"
+        )
+        fig = px.box(
+            df.dropna(),
+            x="rank",
+            y="delta",
+            color="iteration",
+            title="time between ncclKernel_ReduceScatter starts",
+            labels={"delta": "time delta (ns)"},
+        )
+        contents = plotly.io.to_json(fig)
+        return werkzeug.Response(
+            contents, content_type="application/json", headers=NodifyPlugin.headers
+        )
+
+    @wrappers.Request.application
+    def progress_AllGather_start2end_route(self, request: werkzeug.Request):
+        del request
+
+        df = time_between_barriers_start2end(
+            self.trace_analyzer.t, comm_id="ncclKernel_AllGather"
+        )
+        fig = px.box(
+            df.dropna(),
+            x="rank",
+            y="delta",
+            color="iteration",
+            title="time between ncclKernel_AllGather starts",
             labels={"delta": "time delta (ns)"},
         )
         contents = plotly.io.to_json(fig)
@@ -302,9 +492,9 @@ class NodifyPlugin(base_plugin.TBPlugin):
             ticktext=[d.strftime("%f") for d in pd.to_datetime(bins[:-1])],
         )
 
-        contents = plotly.io.to_html(fig)
+        contents = plotly.io.to_json(fig)
         return werkzeug.Response(
-            contents, content_type="text/html", headers=NodifyPlugin.headers
+            contents, content_type="application/json", headers=NodifyPlugin.headers
         )
 
     @wrappers.Request.application
@@ -327,9 +517,9 @@ class NodifyPlugin(base_plugin.TBPlugin):
             ticktext=[d.strftime("%f") for d in pd.to_datetime(bins[:-1])],
         )
 
-        contents = plotly.io.to_html(fig)
+        contents = plotly.io.to_json(fig)
         return werkzeug.Response(
-            contents, content_type="text/html", headers=NodifyPlugin.headers
+            contents, content_type="application/json", headers=NodifyPlugin.headers
         )
 
     @wrappers.Request.application
@@ -352,9 +542,9 @@ class NodifyPlugin(base_plugin.TBPlugin):
             ticktext=[d.strftime("%f") for d in pd.to_datetime(bins[:-1])],
         )
 
-        contents = plotly.io.to_html(fig)
+        contents = plotly.io.to_json(fig)
         return werkzeug.Response(
-            contents, content_type="text/html", headers=NodifyPlugin.headers
+            contents, content_type="application/json", headers=NodifyPlugin.headers
         )
 
     @wrappers.Request.application

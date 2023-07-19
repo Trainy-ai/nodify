@@ -4,20 +4,20 @@ import { useFetch, useAsync } from "react-async"
 import { useState, useEffect } from 'react'
 import Plot from 'react-plotly.js';
 
-const Start2Start = ({ menu }) => {
+const fetchData = async ({ setPlotInput }, url) => {
+    const response = await fetch(url, {
+        headers: { accept: "application/json" },
+    })
+
+    if (!response.ok) throw new Error(response.status)
+    var out = await response.json();
+    setPlotInput(out);
+    return response;
+}
+
+const Start2StartAllReduce = ({ menu }, url) => {
     const [plotInput, setPlotInput] = useState([]);
-
-    const fetchData = async ({ setPlotInput }) => {
-        const response = await fetch(`./consistency_start2start`, {
-            headers: { accept: "application/json" },
-        })
-
-        if (!response.ok) throw new Error(response.status)
-        var out = await response.json();
-        setPlotInput(out);
-        return response;
-    }
-    fetchData({ setPlotInput });
+    fetchData({ setPlotInput }, `./consistency_AllReduce_start2start_route`);
     return (
         <>
             <Plot data={plotInput.data} layout={plotInput.layout} />
@@ -25,20 +25,49 @@ const Start2Start = ({ menu }) => {
     );
 };
 
-const Start2End = ({ menu }) => {
+const Start2EndAllReduce = ({ menu }) => {
     const [plotInput, setPlotInput] = useState([]);
+    fetchData({ setPlotInput }, `./consistency_AllReduce_start2end_route`);
+    return (
+        <>
+            <Plot data={plotInput.data} layout={plotInput.layout} />
+        </>
+    );
+};
 
-    const fetchData = async ({ setPlotInput }) => {
-        const response = await fetch(`./consistency_start2end`, {
-            headers: { accept: "application/json" },
-        })
+const Start2StartAllGather = ({ menu }, url) => {
+    const [plotInput, setPlotInput] = useState([]);
+    fetchData({ setPlotInput }, `./consistency_AllGather_start2start_route`);
+    return (
+        <>
+            <Plot data={plotInput.data} layout={plotInput.layout} />
+        </>
+    );
+};
 
-        if (!response.ok) throw new Error(response.status)
-        var out = await response.json();
-        setPlotInput(out);
-        return response;
-    }
-    fetchData({ setPlotInput });
+const Start2EndAllGather = ({ menu }) => {
+    const [plotInput, setPlotInput] = useState([]);
+    fetchData({ setPlotInput }, `./consistency_AllGather_start2end_route`);
+    return (
+        <>
+            <Plot data={plotInput.data} layout={plotInput.layout} />
+        </>
+    );
+};
+
+const Start2StartReduceScatter = ({ menu }, url) => {
+    const [plotInput, setPlotInput] = useState([]);
+    fetchData({ setPlotInput }, `./consistency_ReduceScatter_start2start_route`);
+    return (
+        <>
+            <Plot data={plotInput.data} layout={plotInput.layout} />
+        </>
+    );
+};
+
+const Start2EndReduceScatter = ({ menu }) => {
+    const [plotInput, setPlotInput] = useState([]);
+    fetchData({ setPlotInput }, `./consistency_ReduceScatter_start2end_route`);
     return (
         <>
             <Plot data={plotInput.data} layout={plotInput.layout} />
@@ -49,8 +78,12 @@ const Start2End = ({ menu }) => {
 const ConsistencyView = ({ menu }) => {
     return (
         <>
-            <Start2Start />
-            <Start2End />
+            <Start2StartAllReduce />
+            <Start2EndAllReduce />
+            <Start2StartAllGather />
+            <Start2EndAllGather />
+            <Start2StartReduceScatter />
+            <Start2EndReduceScatter />
         </>
     );
 };
