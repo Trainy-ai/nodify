@@ -84,7 +84,7 @@ class NodifyPlugin(base_plugin.TBPlugin):
             "/consistency_ReduceScatter_start2end_route": self.consistency_ReduceScatter_start2end_route,
             "/kernel": self.kernel_route,
             "/progress_AllReduce_start2start_route": self.progress_AllReduce_start2start_route,
-            "/progress_AllGather_start2end_route": self.progress_AllGather_start2end_route,
+            "/progress_AllGather_start2start_route": self.progress_AllGather_start2start_route,
             "/progress_ReduceScatter_start2start_route": self.progress_ReduceScatter_start2start_route,
             "/progress_AllReduce_start2end_route": self.progress_AllReduce_start2end_route,
             "/progress_AllGather_start2end_route": self.progress_AllGather_start2end_route,
@@ -303,7 +303,7 @@ class NodifyPlugin(base_plugin.TBPlugin):
             x="rank",
             y="delta",
             color="iteration",
-            title="time between ncclKernel_AllReduce starts",
+            title="time between ncclKernel_AllReduce calls",
             labels={"delta": "time delta (ns)"},
         )
         contents = plotly.io.to_json(fig)
@@ -323,7 +323,7 @@ class NodifyPlugin(base_plugin.TBPlugin):
             x="rank",
             y="delta",
             color="iteration",
-            title="time between ncclKernel_ReduceScatter starts",
+            title="time between ncclKernel_ReduceScatter calls",
             labels={"delta": "time delta (ns)"},
         )
         contents = plotly.io.to_json(fig)
@@ -343,7 +343,7 @@ class NodifyPlugin(base_plugin.TBPlugin):
             x="rank",
             y="delta",
             color="iteration",
-            title="time between ncclKernel_AllGather starts",
+            title="time between ncclKernel_AllGather calls",
             labels={"delta": "time delta (ns)"},
         )
         contents = plotly.io.to_json(fig)
@@ -424,7 +424,7 @@ class NodifyPlugin(base_plugin.TBPlugin):
             x="iteration",
             y="delta",
             color="rank",
-            title="time between ncclKernel_AllReduce starts",
+            title="time between ncclKernel_AllReduce calls",
             labels={"delta": "time delta (ns)"},
         )
         contents = plotly.io.to_json(fig)
@@ -444,7 +444,7 @@ class NodifyPlugin(base_plugin.TBPlugin):
             x="iteration",
             y="delta",
             color="rank",
-            title="time between ncclKernel_ReduceScatter starts",
+            title="time between ncclKernel_ReduceScatter calls",
             labels={"delta": "time delta (ns)"},
         )
         contents = plotly.io.to_json(fig)
@@ -463,8 +463,8 @@ class NodifyPlugin(base_plugin.TBPlugin):
             df.dropna(),
             x="iteration",
             y="delta",
-            color="ranks",
-            title="time between ncclKernel_AllGather starts",
+            color="rank",
+            title="time between ncclKernel_AllGather calls",
             labels={"delta": "time delta (ns)"},
         )
         contents = plotly.io.to_json(fig)
