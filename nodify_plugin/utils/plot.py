@@ -15,6 +15,11 @@ from nodify_plugin.utils.range import (
     fraction_uncovered,
 )
 
+import plotly
+import plotly.express as px
+
+import werkzeug
+
 
 def binned_percent_usage(df, bins=30):
     """
@@ -110,3 +115,21 @@ def time_between_barriers_start2end(
     communication_ids = s_map[s_map.index.str.startswith(comm_id)].values
     comms_df = df.loc[df["name"].isin(communication_ids)]
     return comms_df.groupby("rank").apply(start_end_delta).reset_index(drop=True)
+
+def box_plot(df, **plot_kwargs):
+    
+    df = df.dropna()
+    try:
+        fig = px.bar(
+            result_df,
+            **plot_kwargs
+        )
+
+        contents = plotly.io.to_json(fig)
+        return werkzeug.Response(
+            contents, content_type="application/json", headers=NodifyPlugin.headers
+        )
+    except:
+        return werkzeug.Response(
+            "No communication operations found", status=500
+        )

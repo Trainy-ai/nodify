@@ -26,6 +26,7 @@ from nodify_plugin.utils.plot import (
     heatmap,
     time_between_barriers_start,
     time_between_barriers_start2end,
+    box_plot
 )
 
 from posthog import Posthog
@@ -238,17 +239,13 @@ class NodifyPlugin(base_plugin.TBPlugin):
         df = time_between_barriers_start(
             self.trace_analyzer.t, comm_id="ncclKernel_AllReduce"
         )
-        fig = px.box(
-            df.dropna(),
+        return box_plot(
+            df,
             x="rank",
             y="delta",
             color="iteration",
             title="time between ncclKernel_AllReduce starts",
             labels={"delta": "time delta (ns)"},
-        )
-        contents = plotly.io.to_json(fig)
-        return werkzeug.Response(
-            contents, content_type="application/json", headers=NodifyPlugin.headers
         )
 
     @wrappers.Request.application
@@ -258,17 +255,13 @@ class NodifyPlugin(base_plugin.TBPlugin):
         df = time_between_barriers_start(
             self.trace_analyzer.t, comm_id="ncclKernel_ReduceScatter"
         )
-        fig = px.box(
-            df.dropna(),
+        return box_plot(
+            df,
             x="rank",
             y="delta",
             color="iteration",
             title="time between ncclKernel_ReduceScatter starts",
             labels={"delta": "time delta (ns)"},
-        )
-        contents = plotly.io.to_json(fig)
-        return werkzeug.Response(
-            contents, content_type="application/json", headers=NodifyPlugin.headers
         )
 
     @wrappers.Request.application
@@ -278,17 +271,13 @@ class NodifyPlugin(base_plugin.TBPlugin):
         df = time_between_barriers_start(
             self.trace_analyzer.t, comm_id="ncclKernel_AllGather"
         )
-        fig = px.box(
-            df.dropna(),
+        return box_plot(
+            df,
             x="rank",
             y="delta",
             color="iteration",
             title="time between ncclKernel_AllGather starts",
             labels={"delta": "time delta (ns)"},
-        )
-        contents = plotly.io.to_json(fig)
-        return werkzeug.Response(
-            contents, content_type="application/json", headers=NodifyPlugin.headers
         )
 
     @wrappers.Request.application
@@ -298,17 +287,13 @@ class NodifyPlugin(base_plugin.TBPlugin):
         df = time_between_barriers_start2end(
             self.trace_analyzer.t, comm_id="ncclKernel_AllReduce"
         )
-        fig = px.box(
+        return box_plot(
             df.dropna(),
             x="rank",
             y="delta",
             color="iteration",
             title="time between ncclKernel_AllReduce calls",
             labels={"delta": "time delta (ns)"},
-        )
-        contents = plotly.io.to_json(fig)
-        return werkzeug.Response(
-            contents, content_type="application/json", headers=NodifyPlugin.headers
         )
 
     @wrappers.Request.application
@@ -318,17 +303,13 @@ class NodifyPlugin(base_plugin.TBPlugin):
         df = time_between_barriers_start2end(
             self.trace_analyzer.t, comm_id="ncclKernel_ReduceScatter"
         )
-        fig = px.box(
-            df.dropna(),
+        return box_plot(
+            df,
             x="rank",
             y="delta",
             color="iteration",
             title="time between ncclKernel_ReduceScatter calls",
             labels={"delta": "time delta (ns)"},
-        )
-        contents = plotly.io.to_json(fig)
-        return werkzeug.Response(
-            contents, content_type="application/json", headers=NodifyPlugin.headers
         )
 
     @wrappers.Request.application
@@ -338,20 +319,16 @@ class NodifyPlugin(base_plugin.TBPlugin):
         df = time_between_barriers_start2end(
             self.trace_analyzer.t, comm_id="ncclKernel_AllGather"
         )
-        fig = px.box(
-            df.dropna(),
+        return box_plot(
+            df,
             x="rank",
             y="delta",
             color="iteration",
             title="time between ncclKernel_AllGather calls",
             labels={"delta": "time delta (ns)"},
         )
-        contents = plotly.io.to_json(fig)
-        return werkzeug.Response(
-            contents, content_type="application/json", headers=NodifyPlugin.headers
-        )
 
-    ################################
+
     @wrappers.Request.application
     def progress_AllReduce_start2start_route(self, request: werkzeug.Request):
         del request
@@ -359,17 +336,13 @@ class NodifyPlugin(base_plugin.TBPlugin):
         df = time_between_barriers_start(
             self.trace_analyzer.t, comm_id="ncclKernel_AllReduce"
         )
-        fig = px.box(
-            df.dropna(),
+        return box_plot(
+            df,
             x="iteration",
             y="delta",
             color="rank",
             title="time between ncclKernel_AllReduce starts",
-            labels={"delta": "time delta (ns)"},
-        )
-        contents = plotly.io.to_json(fig)
-        return werkzeug.Response(
-            contents, content_type="application/json", headers=NodifyPlugin.headers
+            labels={"delta": "time delta (ns)"},            
         )
 
     @wrappers.Request.application
@@ -379,17 +352,14 @@ class NodifyPlugin(base_plugin.TBPlugin):
         df = time_between_barriers_start(
             self.trace_analyzer.t, comm_id="ncclKernel_ReduceScatter"
         )
-        fig = px.box(
-            df.dropna(),
+
+        return box_plot(
+            df,
             x="iteration",
             y="delta",
             color="rank",
             title="time between ncclKernel_ReduceScatter starts",
             labels={"delta": "time delta (ns)"},
-        )
-        contents = plotly.io.to_json(fig)
-        return werkzeug.Response(
-            contents, content_type="application/json", headers=NodifyPlugin.headers
         )
 
     @wrappers.Request.application
@@ -399,17 +369,13 @@ class NodifyPlugin(base_plugin.TBPlugin):
         df = time_between_barriers_start(
             self.trace_analyzer.t, comm_id="ncclKernel_AllGather"
         )
-        fig = px.box(
-            df.dropna(),
+        return box_plot(
+            df,
             x="iteration",
             y="delta",
             color="rank",
             title="time between ncclKernel_AllGather starts",
             labels={"delta": "time delta (ns)"},
-        )
-        contents = plotly.io.to_json(fig)
-        return werkzeug.Response(
-            contents, content_type="application/json", headers=NodifyPlugin.headers
         )
 
     @wrappers.Request.application
@@ -419,17 +385,13 @@ class NodifyPlugin(base_plugin.TBPlugin):
         df = time_between_barriers_start2end(
             self.trace_analyzer.t, comm_id="ncclKernel_AllReduce"
         )
-        fig = px.box(
-            df.dropna(),
+        return box_plot(
+            df,
             x="iteration",
             y="delta",
             color="rank",
             title="time between ncclKernel_AllReduce calls",
             labels={"delta": "time delta (ns)"},
-        )
-        contents = plotly.io.to_json(fig)
-        return werkzeug.Response(
-            contents, content_type="application/json", headers=NodifyPlugin.headers
         )
 
     @wrappers.Request.application
@@ -439,17 +401,13 @@ class NodifyPlugin(base_plugin.TBPlugin):
         df = time_between_barriers_start2end(
             self.trace_analyzer.t, comm_id="ncclKernel_ReduceScatter"
         )
-        fig = px.box(
-            df.dropna(),
+        return box_plot(
+            df,
             x="iteration",
             y="delta",
             color="rank",
             title="time between ncclKernel_ReduceScatter calls",
             labels={"delta": "time delta (ns)"},
-        )
-        contents = plotly.io.to_json(fig)
-        return werkzeug.Response(
-            contents, content_type="application/json", headers=NodifyPlugin.headers
         )
 
     @wrappers.Request.application
@@ -459,17 +417,13 @@ class NodifyPlugin(base_plugin.TBPlugin):
         df = time_between_barriers_start2end(
             self.trace_analyzer.t, comm_id="ncclKernel_AllGather"
         )
-        fig = px.box(
+        return box_plot(
             df.dropna(),
             x="iteration",
             y="delta",
             color="rank",
             title="time between ncclKernel_AllGather calls",
             labels={"delta": "time delta (ns)"},
-        )
-        contents = plotly.io.to_json(fig)
-        return werkzeug.Response(
-            contents, content_type="application/json", headers=NodifyPlugin.headers
         )
 
     @wrappers.Request.application
@@ -552,9 +506,12 @@ class NodifyPlugin(base_plugin.TBPlugin):
     def compute_communication_overlap_route(self, request: werkzeug.Request):
         del request
 
-        result_df = self.trace_analyzer.get_comm_comp_overlap(visualize=False)
+        try:
+            result_df = self.trace_analyzer.get_comm_comp_overlap(visualize=False)
+        except:
+            return werkzeug.Response("No communication operations found", status=500)
 
-        fig = px.bar(
+        return box_plot(
             result_df,
             x="rank",
             y="comp_comm_overlap_pctg",
@@ -564,12 +521,6 @@ class NodifyPlugin(base_plugin.TBPlugin):
                 "comp_comm_overlap_pctg": "Computation-Communication Overlap Percentage",
             },
         )
-
-        contents = plotly.io.to_json(fig)
-        return werkzeug.Response(
-            contents, content_type="application/json", headers=NodifyPlugin.headers
-        )
-
 
 if __name__ == "__main__":
     print("hello")

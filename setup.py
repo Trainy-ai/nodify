@@ -49,6 +49,8 @@ class build_frontend(setuptools.Command):
 
 INSTALL_REQUIRED = [
     "HolisticTraceAnalysis",
+    "posthog",
+    "tensorboard"
 ]
 
 setuptools.setup(
