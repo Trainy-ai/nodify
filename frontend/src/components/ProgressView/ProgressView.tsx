@@ -15,75 +15,25 @@ const fetchData = async ({ setPlotInput }, url) => {
     return response;
 }
 
-const Start2StartAllReduce = ({ menu }, url) => {
+const BoxPlot = ({ url }) => {
     const [plotInput, setPlotInput] = useState([]);
-    fetchData({ setPlotInput }, `./progress_AllReduce_start2start_route`);
+    fetchData({ setPlotInput }, url);
     return (
         <>
             <Plot data={plotInput.data} layout={plotInput.layout} />
         </>
-    );
-};
-
-const Start2EndAllReduce = ({ menu }) => {
-    const [plotInput, setPlotInput] = useState([]);
-    fetchData({ setPlotInput }, `./progress_AllReduce_start2end_route`);
-    return (
-        <>
-            <Plot data={plotInput.data} layout={plotInput.layout} />
-        </>
-    );
-};
-
-const Start2StartAllGather = ({ menu }, url) => {
-    const [plotInput, setPlotInput] = useState([]);
-    fetchData({ setPlotInput }, `./progress_AllGather_start2start_route`);
-    return (
-        <>
-            <Plot data={plotInput.data} layout={plotInput.layout} />
-        </>
-    );
-};
-
-const Start2EndAllGather = ({ menu }) => {
-    const [plotInput, setPlotInput] = useState([]);
-    fetchData({ setPlotInput }, `./progress_AllGather_start2end_route`);
-    return (
-        <>
-            <Plot data={plotInput.data} layout={plotInput.layout} />
-        </>
-    );
-};
-
-const Start2StartReduceScatter = ({ menu }, url) => {
-    const [plotInput, setPlotInput] = useState([]);
-    fetchData({ setPlotInput }, `./progress_ReduceScatter_start2start_route`);
-    return (
-        <>
-            <Plot data={plotInput.data} layout={plotInput.layout} />
-        </>
-    );
-};
-
-const Start2EndReduceScatter = ({ menu }) => {
-    const [plotInput, setPlotInput] = useState([]);
-    fetchData({ setPlotInput }, `./progress_ReduceScatter_start2end_route`);
-    return (
-        <>
-            <Plot data={plotInput.data} layout={plotInput.layout} />
-        </>
-    );
-};
+    )
+}
 
 const ProgressView = ({ menu }) => {
     return (
         <>
-            <Start2StartAllReduce />
-            <Start2EndAllReduce />
-            <Start2StartAllGather />
-            <Start2EndAllGather />
-            <Start2StartReduceScatter />
-            <Start2EndReduceScatter />
+            <BoxPlot url="./progress_AllReduce_start2start_route" />
+            <BoxPlot url="./progress_AllReduce_start2end_route" />
+            <BoxPlot url="./progress_AllGather_start2start_route" />
+            <BoxPlot url="./progress_AllGather_start2end_route" />
+            <BoxPlot url="./progress_ReduceScatter_start2start_route" />
+            <BoxPlot url="./progress_ReduceScatter_start2end_route" />
         </>
     );
 };

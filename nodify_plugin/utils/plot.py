@@ -18,9 +18,6 @@ from nodify_plugin.utils.range import (
 import plotly
 import plotly.express as px
 
-import werkzeug
-
-
 def binned_percent_usage(df, bins=30):
     """
     Computes the percent usage within equally sized time intervals
@@ -116,20 +113,20 @@ def time_between_barriers_start2end(
     comms_df = df.loc[df["name"].isin(communication_ids)]
     return comms_df.groupby("rank").apply(start_end_delta).reset_index(drop=True)
 
-def box_plot(df, **plot_kwargs):
+def empty_plot(error_msg):
+    fig = px.scatter_3d()
+    fig.add_annotation(text=error_msg)
+    return fig
+
+def box_plot(df, error_msg="No communication operations found", **plot_kwargs):
     
     df = df.dropna()
     try:
-        fig = px.bar(
-            result_df,
+        fig = px.box(
+            df,
             **plot_kwargs
         )
 
-        contents = plotly.io.to_json(fig)
-        return werkzeug.Response(
-            contents, content_type="application/json", headers=NodifyPlugin.headers
-        )
-    except:
-        return werkzeug.Response(
-            "No communication operations found", status=500
-        )
+    except Exception as e:
+        fig = empty_plot(error_msg)
+    return fig
